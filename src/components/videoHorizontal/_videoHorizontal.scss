@@ -2,6 +2,7 @@
 
 .videoHorizontal {
    border-bottom: 0.3px solid $border-color;
+
    cursor: pointer;
 
    &__left {
@@ -24,8 +25,10 @@
 
    &__duration {
       position: absolute;
+
       bottom: 0.6rem;
       right: 1.2rem;
+
       font-size: 0.9rem;
       padding: 0.2rem;
       background: #080808ec;
@@ -38,6 +41,8 @@
 
    &__title {
       font-size: 0.95rem;
+
+      // color: #fff;
       letter-spacing: 0.3px;
 
       @include line-clamp(2);
@@ -51,6 +56,7 @@
       img {
          width: 36px;
          height: 36px;
+
          border-radius: 50%;
          margin-right: 0.5rem;
          cursor: pointer;
