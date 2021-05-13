@@ -1,47 +1,57 @@
-import firebase from 'firebase/app';
-import auth from '../../firebase';
-import { LOAD_PROFILE, LOGIN_FAIL, LOGIN_REQUEST, LOGIN_SUCCESS, LOG_OUT } from '../actionType';
+import firebase from 'firebase/app'
 
-export const login = () => async (dispatch) => {
-    try {
-        dispatch({
-            type: LOGIN_REQUEST
-        })
-        const provider = new firebase.auth.GoogleAuthProvider();
-        provider.addScope('https://www.googleapis.com/auth/youtube.force-ssl');
-        const res = await auth.signInWithPopup(provider);
-        const accessToken = res.credential.accessToken;
-        const profile = {
-            name: res.additionalUserInfo.profile.name,
-            photoURL: res.additionalUserInfo.profile.picture
-        };
+import auth from '../../firebase'
+import {
+   LOAD_PROFILE,
+   LOGIN_FAIL,
+   LOGIN_REQUEST,
+   LOGIN_SUCCESS,
+   LOG_OUT,
+} from '../actionType'
 
-        sessionStorage.setItem('inder-access-token', accessToken);
-        sessionStorage.setItem('inder-user', JSON.stringify(profile));
+export const login = () => async dispatch => {
+   try {
+      dispatch({
+         type: LOGIN_REQUEST,
+      })
 
-        dispatch({
-            type: LOGIN_SUCCESS,
-            payload: accessToken
-        });
+      const provider = new firebase.auth.GoogleAuthProvider()
+      provider.addScope('https://www.googleapis.com/auth/youtube.force-ssl')
 
-        dispatch({
-            type: LOAD_PROFILE,
-            payload: profile
-        })
-    } catch (error) {
-        console.log(error, 'error')
-        dispatch({
-            type: LOGIN_FAIL,
-            payload: error.message
-        })
-    }
+      const res = await auth.signInWithPopup(provider)
+      const accessToken = res.credential.accessToken
+
+      const profile = {
+         name: res.additionalUserInfo.profile.name,
+         photoURL: res.additionalUserInfo.profile.picture,
+      }
+
+      sessionStorage.setItem('ytc-access-token', accessToken)
+      sessionStorage.setItem('ytc-user', JSON.stringify(profile))
+
+      dispatch({
+         type: LOGIN_SUCCESS,
+         payload: accessToken,
+      })
+      dispatch({
+         type: LOAD_PROFILE,
+         payload: profile,
+      })
+   } catch (error) {
+      console.log(error.message)
+      dispatch({
+         type: LOGIN_FAIL,
+         payload: error.message,
+      })
+   }
 }
 
-export const log_out = () => async (dispatch) => {
-    await auth.signOut();
-    dispatch({
-        type: LOG_OUT
-    });
-    sessionStorage.removeItem('inder-access-token');
-    sessionStorage.removeItem('inder-user');
+export const log_out = () => async dispatch => {
+   await auth.signOut()
+   dispatch({
+      type: LOG_OUT,
+   })
+
+   sessionStorage.removeItem('ytc-access-token')
+   sessionStorage.removeItem('ytc-user')
 }
