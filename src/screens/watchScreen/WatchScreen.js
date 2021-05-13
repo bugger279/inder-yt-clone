@@ -24,11 +24,8 @@ const WatchScreen = () => {
       dispatch(getRelatedVideos(id))
    }, [dispatch, id])
 
-   const { videos, loading: relatedVideosLoading } = useSelector(
-      state => state.relatedVideos
-   )
-
-   const { video, loading } = useSelector(state => state.selectedVideo)
+   const { videos, loading: relatedVideosLoading } = useSelector(state => state.relatedVideos);
+   const { video, loading } = useSelector(state => state.selectedVideo);
 
    return (
       <Row>
@@ -45,7 +42,7 @@ const WatchScreen = () => {
                   width='100%'
                   height='100%'></iframe>
             </div>
-            {!loading ? (
+            {!relatedVideosLoading ? (
                <VideoMetaData video={video} videoId={id} />
             ) : (
                <h6>Loading...</h6>
