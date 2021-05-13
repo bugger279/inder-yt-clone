@@ -35,31 +35,30 @@ export const getCommentsOfVideoById = (id) => async (dispatch) => {
 
 export const addComment = (id, text) => async (dispatch, getState) => {
   try {
-      const commentObj = {
+    const obj = {
+      snippet: {
+        videoId: id,
+        topLevelComment: {
           snippet: {
-              videoId: id,
-              topLevelComment: {
-                  snippet: {
-                      textOriginal: text
-                  }
-              }
-          }
-      }
+            textOriginal: text,
+          },
+        },
+      },
+    };
 
-    await request.post("/commentThreads", commentObj, {
+    await request.post("/commentThreads", obj, {
       params: {
         part: "snippet",
-        videoId: id,
       },
       headers: {
         Authorization: `Bearer ${getState().auth.accessToken}`,
       },
     });
-
     dispatch({
-      type: CREATE_COMMENT_SUCCESS
+      type: CREATE_COMMENT_SUCCESS,
     });
-    dispatch(getCommentsOfVideoById(id))
+
+    setTimeout(() => dispatch(getCommentsOfVideoById(id)), 3000);
   } catch (error) {
     console.log(error.response.data);
     dispatch({
