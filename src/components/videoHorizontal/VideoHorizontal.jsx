@@ -1,41 +1,91 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import moment from 'moment';
 import { AiFillEye } from 'react-icons/ai'
 import numeral from 'numeral';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import './_videoHorizontal.scss'
 import { Col, Row } from 'react-bootstrap';
+import request from '../../api';
+import { useHistory } from 'react-router-dom';
 
-const VideoHorizontal = () => {
-    const seconds = moment.duration(1000).asSeconds();
+const VideoHorizontal = ({video}) => {
+    const [views, setViews] = useState(null);
+    const [duration, setDuration] = useState(null);
+    const [channelIcon, setChannelIcon] = useState(null);
+    
+    const {
+        id,
+        snippet: {
+            publishedAt,
+            channelId,
+            title,
+            description,
+            channelTitle,
+            thumbnails: { medium }
+        }
+    } = video;
+
+    useEffect(() => {
+        const get_video_details = async () => {
+            const { data: { items } } = await request('/videos', {
+                params: {
+                    part: 'contentDetails,statistics',
+                    id: id.videoId
+                }
+            })
+            setDuration(items[0].contentDetails.duration);
+            setViews(items[0].statistics.viewCount)
+        }
+        get_video_details()
+    }, [id]);
+
+    useEffect(() => {
+        const get_channel_icon = async () => {
+            const { data: { items } } = await request('/channels', {
+                params: {
+                    part: 'snippet',
+                    id: channelId
+                }
+            })
+            setChannelIcon(items[0].snippet.thumbnails.default);
+        }
+        get_channel_icon()
+    }, [channelId]);
+
+    const seconds = moment.duration(duration).asSeconds();
     const _duration = moment.utc(seconds * 1000).format('mm:ss');
+    const history = useHistory();
+    const handleClick = () => {
+        history.push(`/watch/${id.videoId}`)
+    }
 
     return (
-        <Row className="videoHorizontal m-1 py-2 align-items-center">
-            <Col className="videoHorizontal__left" xs={6} md={4}>
+        <Row onClick={handleClick} className="videoHorizontal m-1 py-2 align-items-center">
+            <Col className="videoHorizontal__left" xs={6} md={6}>
                 <LazyLoadImage
-                    src={"https://i.ytimg.com/vi/35lXWvCuM8o/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBkb8PbPZ7j5LjwYL5pp5Y9yjD_YQ"}
+                    src={medium.url}
                     effect="blur"
-                    alt={"title"}
+                    alt={title}
                     className="videoHorizontal__thumbnail"
                     wrapperClassName="videoHorizontal__thumbnail-wrapper"
                 />
-                <span className="video__top__duration">{_duration}</span>
+                <span className="videoHorizontal__duration">{_duration}</span>
             </Col>
-            <Col className="videoHorizontal__right p-0" xs={6} md={8}>
+            <Col className="videoHorizontal__right p-0" xs={6} md={6}>
                 <p className="videoHorizontal__title mb-1">
-                    Be a Full Stack developer in 2 Hours
+                    {title}
                 </p>
                 <div className="videoHorizontal__details">
-                    <AiFillEye /> {numeral(918287).format('0.a')} Views • {moment('2021-05-05').fromNow()}
+                    <AiFillEye /> {numeral(views).format('0.a')} Views • {moment(publishedAt).fromNow()}
                 </div>
                 <div className="videoHorizontal__channel d-flex my-1 align-items-center">
+                {/* To show in Search screen */}
                 {/* <LazyLoadImage
                     src={"https://www.w3schools.com/howto/img_avatar.png"}
                     effect="blur"
                     alt={"title"}
                 /> */}
-                <p>Inder Sav Channel</p>
+                <p>{channelTitle}</p>
                 </div>
             </Col>
         </Row>
