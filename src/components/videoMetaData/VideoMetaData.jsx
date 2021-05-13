@@ -1,13 +1,23 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import './_videoMetaData.scss'
 import moment from 'moment'
 import numeral from 'numeral'
 import { MdThumbUp, MdThumbDown } from 'react-icons/md';
 import ShowMoreText from 'react-show-more-text';
+import { useDispatch, useSelector } from 'react-redux';
+import { checkSubscriptionStatus, getChannelDetails } from '../../redux/actions/channel.action';
 
 const VideoMetaData = ({ video: { snippet, statistics }, videoId }) => {
-   const { channelId, channelTitle, description, title, publishedAt } = snippet
-   const { viewCount, likeCount, dislikeCount } = statistics
+   const { channelId, channelTitle, description, title, publishedAt } = snippet;
+   const { viewCount, likeCount, dislikeCount } = statistics;
+   const dispatch = useDispatch();
+   const {snippet: channelSnippet, statistics: channelStatistics} = useSelector(state =>  state.channelDetails.channel);
+   const subscriptionStatus = useSelector(state => state.channelDetails.subscriptionStatus)
+
+   useEffect(() => {
+      dispatch(getChannelDetails(channelId));
+      dispatch(checkSubscriptionStatus(channelId))
+   },[dispatch, channelId]);
 
    return (
       <div className='py-2 videoMetaData'>
@@ -33,18 +43,18 @@ const VideoMetaData = ({ video: { snippet, statistics }, videoId }) => {
          <div className='py-3 my-2 videoMetaData__channel d-flex justify-content-between align-items-center'>
             <div className='d-flex'>
                <img
-                  src={"https://www.w3schools.com/howto/img_avatar.png"}
+                  src={channelSnippet?.thumbnails?.default?.url}
                   alt=''
                   className='me-3 rounded-circle'
                />
                <div className='d-flex flex-column'>
                   <span>{channelTitle}</span>
-                  <span>{numeral(10000).format('0.a')} Subscribers
+                  <span>{numeral(channelStatistics?.subscriberCount).format('0.a')} Subscribers
                   </span>
                </div>
             </div>
 
-            <button className="btn btn-border-0 m-2 p-2">SUBSCRIBE</button>
+            <button className={`btn btn-border-0 m-2 p-2 ${subscriptionStatus && 'btn-gray'}`}>{subscriptionStatus? 'SUBSCRIBED':'SUBSCRIBE'}</button>
          </div>
          <div className='videoMetaData__description'>
             <ShowMoreText
